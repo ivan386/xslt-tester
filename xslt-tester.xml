@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="#xstyle" type="text/xsl" ?>
+<html>
+	<head>
+		<title>Simple xslt testing page</title>
+		
+		<xsl:stylesheet id="xstyle" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+			<xsl:output method="html" encoding="utf-8"/>
+
+			<xsl:template match="@*|node()">
+				<xsl:copy>
+					<xsl:apply-templates select="@*|node()"/>
+				</xsl:copy>
+			</xsl:template>
+			
+			<xsl:template match="xsl:stylesheet" />
+			
+			<xsl:template match="textarea">
+				<textarea spellcheck="false" placeholder="{@id}" title="{@id}">
+					<xsl:apply-templates select="@*|node()"/>
+				</textarea>
+			</xsl:template>
+		</xsl:stylesheet>
+		
+		<style>
+			html, body{
+				display: flex;
+				flex-flow: column;
+				height: 100%;
+				margin: 0;
+				padding: 0;
+			}
+			
+			div {
+				display: flex;
+				flex-wrap: wrap;
+				flex-grow: 1;
+			}
+			
+			span {
+				flex-grow: 0;
+			}
+			
+			textarea{
+				width: 100vw;
+			}
+		</style>
+	</head>
+	<body>
+		<span>
+			<button onclick="transform()">
+				transform
+			</button>
+			
+			<input type="checkbox" id="auto" onclick="transform()"/>auto
+			
+			<input type="checkbox" id="allow tabs" />allow tabs in text
+		</span>
+		
+		<div>
+		
+			<textarea id="xml"><![CDATA[<test attribute="attribute value">
+	<one>text of one</one>
+	<two>text of two</two>
+	<three>text of three</three>
+	<!-- comment -->
+</test>]]></textarea>
+
+			<textarea id="xslt"><![CDATA[<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
+	<xsl:output method="xml" encoding="utf-8"/>
+
+	<xsl:template match="node()|@*">
+		<xsl:copy>
+			<xsl:apply-templates select="node()|@*"/>
+		</xsl:copy>
+	</xsl:template>
+
+	<xsl:template match="@attribute">
+		<xsl:attribute name="{name()}">		
+			<xsl:text>another attribute value</xsl:text>
+		</xsl:attribute>
+	</xsl:template>
+
+	<xsl:template match="one">
+		<xsl:text>there is no one here</xsl:text>
+	</xsl:template>
+
+</xsl:stylesheet>]]></textarea>
+			
+
+			<textarea id="result"/>
+		</div>
+
+		<script>
+<![CDATA[
+			var processor = new XSLTProcessor();
+			var parser = new DOMParser();
+			var serializer = new XMLSerializer();
+			
+			function transform()
+			{
+				try {
+					processor.reset();
+					
+					processor.importStylesheet(
+						parser.parseFromString(
+							document.getElementById('xslt').value, "text/xml"
+						)
+					);
+					
+					document.getElementById('result').value = serializer.serializeToString(
+						processor.transformToDocument(
+							parser.parseFromString(
+								document.getElementById('xml').value, "text/xml"
+							)
+						)
+					);
+				} catch (e) {
+					document.getElementById('result').value = e;
+				}
+			}
+			
+
+			document.addEventListener('keydown', function(e){
+				
+				if (document.getElementById('allow tabs').checked && e.which == 9)
+				{
+					e.target.setRangeText("\t");
+					e.target.selectionStart++;
+					e.preventDefault();
+				}
+				
+				if (document.getElementById('auto').checked)
+					setTimeout(transform, 100);
+			})
+]]>
+		</script>
+	</body>
+</html>
