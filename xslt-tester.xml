@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html [
+	<!ATTLIST xsl:stylesheet id ID #REQUIRED>
+]>
 <?xml-stylesheet href="#xstyle" type="text/xsl" ?>
 <html>
 	<head>
 		<title>Simple xslt testing page</title>
-		
 		<xsl:stylesheet id="xstyle" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0">
 			<xsl:output method="html" encoding="utf-8"/>
 
@@ -21,7 +23,6 @@
 				</textarea>
 			</xsl:template>
 		</xsl:stylesheet>
-		
 		<style>
 			html, body{
 				display: flex;
